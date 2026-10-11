@@ -1,0 +1,24 @@
+# Ignora tudo por padrão
+*
+
+# Mantém o arquivo de regras e as dependências
+!.gitignore
+!requirements.txt
+
+# Mantém o código-fonte e documentação
+!main.py
+!src/
+!src/**
+!tests/
+!tests/**
+!README.md
+
+# Remove artefatos de execução/cache mesmo dentro do código-fonte
+**/__pycache__/
+*.py[cod]
+
+# Ambientes e arquivos locais
+.venv/
+.idea/
+browser_profile/
+output/
