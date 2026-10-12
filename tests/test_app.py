@@ -12,8 +12,8 @@ from src.video import Video
 @pytest.mark.parametrize(
     ("raw_text", "expected"),
     [
-        (" 1:23 ", "1:23"),
-        ("2:04:09", "2:04:09"),
+        (" 1:23 ", "00:01:23"),
+        ("2:04:09", "02:04:09"),
         ("3 minutos", "3 minutos"),
         ("sem duração", ""),
     ],
@@ -61,7 +61,7 @@ def test_video_from_data_strips_all_fields():
 
     # Assert
     assert result == Video(
-        "Título", "https://www.youtube.com/video", "1:23", "Canal")
+        "Título", "https://www.youtube.com/video", "00:01:23", "Canal")
 
 
 def test_append_unique_preserves_the_first_video_for_duplicate_urls():
@@ -95,7 +95,7 @@ def test_extract_videos_executes_one_script_for_the_whole_batch():
 
     # Assert
     assert result == [
-        Video("Título", "https://www.youtube.com/video", "1:23", "Canal")]
+        Video("Título", "https://www.youtube.com/video", "00:01:23", "Canal")]
     driver.execute_script.assert_called_once()
 
 
