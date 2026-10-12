@@ -78,6 +78,9 @@ def get_browser_user_data_dir() -> Path:
     if sys.platform == "win32":
         return Path.home() / "AppData" / "Local" / "BraveSoftware" / "Brave-Browser" / "User Data"
 
+    if sys.platform == "linux":
+        return Path.home() / ".config" / "BraveSoftware" / "Brave-Browser"
+
     return Path.home() / ".config" / "brave"
 
 
@@ -138,16 +141,23 @@ def duration_from_text(value: str) -> str:
         value: Texto obtido de um atributo ou elemento HTML.
 
     Returns:
-        Duração no formato 'MM:SS'/'H:MM:SS', texto contendo 'minuto' ou
+        Duração no formato 'HH:MM:SS', texto contendo 'minuto' ou
         'segundo', ou string vazia quando nada é encontrado.
     """
     text = value.strip()
     match = DURATION_PATTERN.search(text)
 
     if match:
-        return match.group(0)
+        parts = [int(part) for part in match.group(0).split(":")]
 
-    return text if "minuto" in text.lower() or "segundo" in text.lower() else ""
+        if len(parts) == 2:
+            hours, minutes, seconds = 0, *parts
+        else:
+            hours, minutes, seconds = parts
+
+        return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+
+    return text if "hora" in text.lower() or "minuto" in text.lower() or "segundo" in text.lower() else ""
 
 
 def video_from_data(data: Mapping[str, str]) -> Video | None:
@@ -161,6 +171,8 @@ def video_from_data(data: Mapping[str, str]) -> Video | None:
     Returns:
         Um 'Video' normalizado ou 'None' para dados inválidos.
     """
+    print(data)
+
     title = data.get("title", "").strip()
     url = data.get("url", "").strip()
 
@@ -170,7 +182,7 @@ def video_from_data(data: Mapping[str, str]) -> Video | None:
     return Video(
         title=title,
         url="https://www.youtube.com" + url,
-        duration=data.get("duration", "").strip(),
+        duration=duration_from_text(data.get("duration", "")),
         channel=data.get("channel", "").strip(),
     )
 
