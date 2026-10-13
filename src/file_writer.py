@@ -1,11 +1,14 @@
 import csv
 from dataclasses import asdict
+from logging import Logger, getLogger
 from pathlib import Path
 from typing import Final
 
 from src.video import Video
 
 OUTPUT_FILE: Final[Path] = Path("output/watch_later.csv")
+
+logger: Logger = getLogger(__name__)
 
 
 def export_csv(videos: list[Video]) -> None:
@@ -30,5 +33,5 @@ def export_csv(videos: list[Video]) -> None:
         for video in videos:
             writer.writerow(asdict(video))
 
-    print(f"\nCSV salvo em: {OUTPUT_FILE.resolve()}")
-    print(f"Total de vídeos: {len(videos)}")
+    logger.info(f"CSV salvo em: {OUTPUT_FILE.resolve()}")
+    logger.info(f"Total de vídeos: {len(videos)}")

@@ -1,3 +1,4 @@
+from logging import Logger, getLogger
 import re
 import sys
 import time
@@ -68,6 +69,8 @@ return arguments[0].map((item) => {
 });
 """
 
+logger: Logger = getLogger(__name__)
+
 
 def get_browser_user_data_dir() -> Path:
     """Retorna o diretório de dados de usuário do Brave por plataforma.
@@ -130,7 +133,7 @@ def wait_for_playlist(driver: WebDriver) -> None:
     try:
         WebDriverWait(driver, WAIT_SECONDS).until(playlist_items)
     except TimeoutException:
-        print(
+        logger.error(
             "A playlist não carregou. Verifique o login e se a página abriu corretamente.")
 
 
@@ -171,7 +174,7 @@ def video_from_data(data: Mapping[str, str]) -> Video | None:
     Returns:
         Um 'Video' normalizado ou 'None' para dados inválidos.
     """
-    print(data)
+    logger.debug(data)
 
     title = data.get("title", "").strip()
     url = data.get("url", "").strip()
@@ -217,7 +220,8 @@ def extract_videos(driver: WebDriver, items: Iterable[WebElement] | None = None)
             continue
 
         if not video.duration:
-            print(f"Duração não encontrada: {video.title} | {video.url}")
+            logger.warning(
+                f"Duração não encontrada: {video.title} | {video.url}")
 
         videos.append(video)
 
@@ -300,7 +304,7 @@ def collect_all_videos(driver: WebDriver) -> list[Video]:
         append_videos(driver, videos_by_url, new_items)
         processed_count = len(items)
 
-        print(
+        logger.info(
             f"Elementos no DOM: {len(items)} | "
             f"Vídeos únicos coletados: {len(videos_by_url)}"
         )
@@ -315,12 +319,12 @@ def collect_all_videos(driver: WebDriver) -> list[Video]:
             idle_scrolls = 0
         except TimeoutException:
             idle_scrolls += 1
-            print(
+            logger.warning(
                 "Nenhum novo elemento carregado. "
                 f"Tentativa sem progresso: {idle_scrolls}/{MAX_IDLE_SCROLLS}"
             )
             driver.execute_script("window.scrollBy(0, window.innerHeight);")
             time.sleep(1)
 
-    print(f"Total final: {len(videos_by_url)} vídeos")
+    logger.info(f"Total final: {len(videos_by_url)} vídeos")
     return list(videos_by_url.values())

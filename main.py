@@ -1,9 +1,13 @@
+from logging import Logger, getLogger
 from typing import Final
 
 from src.file_writer import export_csv
+from src.logger import logger_config
 from src.web_driver import create_driver, wait_for_playlist, collect_all_videos
 
 WATCH_LATER_URL: Final[str] = "https://www.youtube.com/playlist?list=WL"
+
+logger: Logger = getLogger(__name__)
 
 
 def main() -> None:
@@ -16,7 +20,9 @@ def main() -> None:
 
     try:
         driver.get(WATCH_LATER_URL)
-        print("Se necessário, faça login no YouTube na janela aberta.")
+
+        logger.info("Se necessário, faça login no YouTube na janela aberta.")
+
         wait_for_playlist(driver)
 
         videos = collect_all_videos(driver)
@@ -27,4 +33,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    logger_config()
     main()
