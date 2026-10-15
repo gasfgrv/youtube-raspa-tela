@@ -116,8 +116,8 @@ def test_create_driver_configures_the_requested_profile():
     fake_driver = Mock()
     with patch("src.web_driver.webdriver.Chrome", return_value=fake_driver) as chrome:
         with patch(
-            "src.web_driver.get_browser_user_data_dir",
-            return_value=Path("C:/Brave/User Data"),
+                "src.web_driver.get_browser_user_data_dir",
+                return_value=Path("C:/Brave/User Data"),
         ):
             # Act
             result = web_driver.create_driver("Work")
@@ -131,7 +131,7 @@ def test_create_driver_configures_the_requested_profile():
     assert f"--user-data-dir={Path('C:/Brave/User Data')}" in options.arguments
 
 
-def test_wait_for_playlist_reports_timeout_without_raising(capsys):
+def test_wait_for_playlist_reports_timeout_without_raising(caplog):
     # Arrange
     driver = Mock()
     wait = Mock()
@@ -142,7 +142,7 @@ def test_wait_for_playlist_reports_timeout_without_raising(capsys):
         web_driver.wait_for_playlist(driver)
 
     # Assert
-    assert "A playlist não carregou" in capsys.readouterr().out
+    assert "A playlist não carregou" in caplog.text
 
 
 def test_collect_all_videos_processes_only_new_batches():
@@ -175,8 +175,9 @@ def test_collect_all_videos_processes_only_new_batches():
     assert len(result) == 2
 
 
-def test_export_csv_writes_headers_and_video_rows(tmp_path, capsys):
+def test_export_csv_writes_headers_and_video_rows(tmp_path, caplog):
     # Arrange
+    caplog.set_level("INFO")
     output_file = tmp_path / "watch_later.csv"
     videos = [Video("Título", "https://example.com/video", "1:23", "Canal")]
 
@@ -188,7 +189,7 @@ def test_export_csv_writes_headers_and_video_rows(tmp_path, capsys):
     content = output_file.read_text(encoding="utf-8-sig")
     assert "title,url,duration,channel" in content
     assert "Título,https://example.com/video,1:23,Canal" in content
-    assert "Total de vídeos: 1" in capsys.readouterr().out
+    assert "Total de vídeos: 1" in caplog.text
 
 
 def test_main_always_quits_driver_and_exports_collected_videos():
