@@ -1,7 +1,7 @@
-from logging import Logger, getLogger
 import re
 import sys
 import time
+from logging import Logger, getLogger
 from pathlib import Path
 from typing import Final, Iterable, Mapping
 
@@ -18,8 +18,7 @@ from src.video import Video
 WAIT_SECONDS: Final[int] = 60
 MAX_IDLE_SCROLLS: Final[int] = 1
 PLAYLIST_ITEM_SELECTOR: Final[str] = "ytd-playlist-video-renderer"
-DURATION_PATTERN: Final[re.Pattern[str]] = re.compile(
-    r"(?<!\d)(?:\d{1,3}:)?\d{1,2}:\d{2}(?!\d)")
+DURATION_PATTERN: Final[re.Pattern[str]] = re.compile(r"(?<!\d)(?:\d{1,3}:)?\d{1,2}:\d{2}(?!\d)")
 BATCH_EXTRACTION_SCRIPT: Final[str] = """
 const durationSelectors = [
     ".ytBadgeShapeText",
@@ -72,19 +71,21 @@ return arguments[0].map((item) => {
 logger: Logger = getLogger(__name__)
 
 
-def get_browser_user_data_dir() -> Path:
+def get_browser_data() -> tuple[Path, str]:
     """Retorna o diretório de dados de usuário do Brave por plataforma.
 
     Returns:
         Caminho usado no argumento '--user-data-dir' do navegador.
     """
     if sys.platform == "win32":
-        return Path.home() / "AppData" / "Local" / "BraveSoftware" / "Brave-Browser" / "User Data"
+        return (Path.home() / "AppData" / "Local" / "BraveSoftware" / "Brave-Browser" / "User Data",
+                r"C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe")
 
     if sys.platform == "linux":
-        return Path.home() / ".config" / "BraveSoftware" / "Brave-Browser"
+        return (Path.home() / ".config" / "BraveSoftware" / "Brave-Browser",
+                "/opt/brave.com/brave/brave")
 
-    return Path.home() / ".config" / "brave"
+    raise RuntimeError(f"Plataforma não suportada: {sys.platform}")
 
 
 def create_driver(profile_name: str = "Default") -> WebDriver:
@@ -99,9 +100,11 @@ def create_driver(profile_name: str = "Default") -> WebDriver:
     Raises:
         WebDriverException: Se o navegador ou o driver não puder ser iniciado.
     """
+    profile_path, exec_path = get_browser_data()
+
     options = Options()
-    options.binary_location = r"C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe"
-    options.add_argument(f"--user-data-dir={get_browser_user_data_dir()}")
+    options.binary_location = exec_path
+    options.add_argument(f"--user-data-dir={profile_path}")
     options.add_argument(f"--profile-directory={profile_name}")
 
     driver = webdriver.Chrome(options=options)
