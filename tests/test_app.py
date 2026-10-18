@@ -116,8 +116,11 @@ def test_create_driver_configures_the_requested_profile():
     fake_driver = Mock()
     with patch("src.web_driver.webdriver.Chrome", return_value=fake_driver) as chrome:
         with patch(
-                "src.web_driver.get_browser_user_data_dir",
-                return_value=Path("C:/Brave/User Data"),
+                "src.web_driver.get_browser_data",
+                return_value=(
+                    Path("C:/Brave/User Data"),
+                    "C:/Brave/brave.exe",
+                ),
         ):
             # Act
             result = web_driver.create_driver("Work")
